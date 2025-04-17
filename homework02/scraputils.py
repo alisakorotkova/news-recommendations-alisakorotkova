@@ -1,9 +1,9 @@
-import requests
+import requests  # type: ignore
 from bs4 import BeautifulSoup
 
 
 def extract_news(parser):
-    """ Extract news from a given web page """
+    """Extract news from a given web page"""
     news = []
     articles = parser.find_all("article")
     for article in articles:
@@ -24,15 +24,14 @@ def extract_news(parser):
 
 
 def extract_next_page(parser):
-    """ Extract next page URL """
+    """Extract next page URL"""
     # PUT YOUR CODE HERE
     next_link = parser.find("a", class_="tm-pagination__block tm-pagination__block_next")
     return next_link["href"] if next_link else None
 
 
-
 def get_news(url, n_pages=1):
-    """ Collect news from a given web page """
+    """Collect news from a given web page"""
     news = []
     while n_pages:
         print("Collecting data from page: {}".format(url))
@@ -47,4 +46,3 @@ def get_news(url, n_pages=1):
         url = "https://habr.com" + next_page
         n_pages -= 1
     return news
-
