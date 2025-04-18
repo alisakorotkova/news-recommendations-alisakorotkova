@@ -14,10 +14,27 @@ def extract_news(parser):
         link_tag = title_tag.find("a")
         url = "https://habr.com" + link_tag["href"] if link_tag else ""
 
-        author_tag = article.find("span", class_="tm-user-info__username")
-        author = author_tag.text.strip() if author_tag else "Unknown"
+        author_tag = (
+            article.find("a", class_="tm-user-info__username")
+            or article.find("span", class_="tm-user-info__username")
+            or article.find("a", class_="tm-article-snippet__author-link")
+        )
+        author = "".join(author_tag.find_all(text=True, recursive=False)).strip() if author_tag else "Unknown"
 
-        complexity = "Средний"
+        complexity_tag = article.find("span", class_="tm-article-complexity__label")
+        if complexity_tag:
+            complexity = complexity_tag.text.strip()
+            complexity = (
+                "Лёгкий"
+                if "easy" in complexity.lower()
+                else (
+                    "Средний"
+                    if "medium" in complexity.lower()
+                    else "Сложный" if "hard" in complexity.lower() else complexity
+                )
+            )
+        else:
+            complexity = "Средний"
 
         news.append({"title": title, "author": author, "url": url, "complexity": complexity})
     return news

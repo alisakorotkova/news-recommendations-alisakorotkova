@@ -30,7 +30,7 @@ def add_label():
 @route("/update_news")
 def update_news():
     # PUT YOUR CODE HERE
-    news_list = get_news("https://habr.com/ru/all", n_pages=10)
+    news_list = get_news("https://habr.com/ru/all", n_pages=15)
     print(news_list)
     s = session()
     try:
@@ -80,6 +80,19 @@ def classify_news():
         label_priority = {"good": 0, "maybe": 1, "never": 2}
 
         sorted_pairs = sorted(unlabeled_news, key=lambda x: label_priority[x.predicted_label])
+        # X = [f"{news.title} {news.complexity}" for news in labeled_news]
+        # y = [news.label for news in labeled_news]
+        # num_of_test = int(len(labeled_news) * 0.25)
+        # X_test = X[:num_of_test]
+        # y_test = y[:num_of_test]
+        # X_train = X[num_of_test:]
+        # y_train = y[num_of_test:]
+        # X_test, y_train, y_test = train_test_split(X, y, test_size = 0.25, random_state=42)
+
+        # classifier = NaiveBayesClassifier(alpha=1)
+        # classifier.fit(X_train, y_train)
+        # accuracy = classifier.score(X_test, y_test)
+        # print(accuracy)
 
         # if __name__ != "__main__":
         return sorted_pairs
@@ -96,6 +109,7 @@ def recommendations():
 
         classified = classify_news()
         print(classified)
+
         return template("news_recommendations", rows=classified)
     finally:
         s.close()
