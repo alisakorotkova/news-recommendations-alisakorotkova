@@ -1,32 +1,65 @@
-import requests
+import requests  # type: ignore
 from bs4 import BeautifulSoup
 
 
 def extract_news(parser):
-    """ Extract news from a given web page """
-    news_list = []
+    """Extract news from a given web page"""
+    news = []
+    articles = parser.find_all("article")
+    for article in articles:
+        title_tag = article.find("h2")
+        if not title_tag:
+            continue
+        title = title_tag.text.strip()
+        link_tag = title_tag.find("a")
+        url = "https://habr.com" + link_tag["href"] if link_tag else ""
 
-    # PUT YOUR CODE HERE
+        author_tag = (
+            article.find("a", class_="tm-user-info__username")
+            or article.find("span", class_="tm-user-info__username")
+            or article.find("a", class_="tm-article-snippet__author-link")
+        )
+        author = "".join(author_tag.find_all(text=True, recursive=False)).strip() if author_tag else "Unknown"
 
-    return news_list
+        complexity_tag = article.find("span", class_="tm-article-complexity__label")
+        if complexity_tag:
+            complexity = complexity_tag.text.strip()
+            complexity = (
+                "Лёгкий"
+                if "easy" in complexity.lower()
+                else (
+                    "Средний"
+                    if "medium" in complexity.lower()
+                    else "Сложный" if "hard" in complexity.lower() else complexity
+                )
+            )
+        else:
+            complexity = "Средний"
+
+        news.append({"title": title, "author": author, "url": url, "complexity": complexity})
+    return news
 
 
 def extract_next_page(parser):
-    """ Extract next page URL """
+    """Extract next page URL"""
     # PUT YOUR CODE HERE
+    next_link = parser.find("a", class_="tm-pagination__block tm-pagination__block_next")
+    return next_link["href"] if next_link else None
 
 
 def get_news(url, n_pages=1):
-    """ Collect news from a given web page """
+    """Collect news from a given web page"""
     news = []
     while n_pages:
         print("Collecting data from page: {}".format(url))
         response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = BeautifulSoup(response.text, "html.parser")
         news_list = extract_news(soup)
-        next_page = extract_next_page(soup)
-        url = "https://habr.com" + next_page
         news.extend(news_list)
+        next_page = extract_next_page(soup)
+        if not next_page:
+            print("Следующая страница не найдена — остановка.")
+            break
+        url = "https://habr.com" + next_page
         n_pages -= 1
     return news
-
